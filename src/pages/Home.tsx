@@ -1,17 +1,25 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { AirQualityMap } from '../components/AirQualityMap';
 import { ForecastPanel } from '../components/ForecastPanel';
 import { HistoryStats } from '../components/HistoryStats';
 import { StationComparison } from '../components/StationComparison';
 import { stations, microStations, forecast, historyStats } from '../data/mockData';
-import type { StationData } from '../data/mockData';
+import { useStationSelection } from '../hooks/useStationSelection';
 import { getAqiColor, getAqiLevelText } from '../utils/aqi';
 
-const MAX_SELECT = 6;
-
 export default function Home() {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'stats' | 'compare'>('stats');
+  const {
+    selectedIds,
+    selectedStations,
+    isSelected,
+    isDisabled,
+    toggleStation,
+    clearSelection,
+    count,
+    isMax,
+    activeTab,
+    setActiveTab,
+  } = useStationSelection(stations);
 
   const overallStats = useMemo(() => {
     const avgAqi = Math.round(stations.reduce((sum, s) => sum + s.aqi, 0) / stations.length);
@@ -21,31 +29,6 @@ export default function Home() {
     const pollutedCount = stations.filter(s => s.aqi > 100).length;
     return { avgAqi, maxAqi, excellentCount, goodCount, pollutedCount };
   }, []);
-
-  const selectedStations: StationData[] = useMemo(
-    () => stations.filter(s => selectedIds.has(s.id)),
-    [selectedIds]
-  );
-
-  const toggleStation = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        if (next.size >= MAX_SELECT) {
-          return prev;
-        }
-        next.add(id);
-        if (activeTab === 'stats') setActiveTab('compare');
-      }
-      return next;
-    });
-  };
-
-  const clearSelection = () => {
-    setSelectedIds(new Set());
-  };
 
   return (
     <div className="w-full h-full bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
@@ -181,7 +164,7 @@ export default function Home() {
                 <span className="text-2xl">📍</span>
                 监测站点列表
               </h3>
-              {selectedIds.size > 0 && (
+              {count > 0 && (
                 <button
                   onClick={clearSelection}
                   className="text-xs text-blue-600 hover:text-blue-800"
@@ -192,20 +175,20 @@ export default function Home() {
             </div>
             <div className="text-xs text-gray-500 mb-2 flex items-center justify-between">
               <span>勾选站点进行对比分析</span>
-              <span className={selectedIds.size >= MAX_SELECT ? 'text-orange-600 font-semibold' : ''}>
-                {selectedIds.size}/{MAX_SELECT}
+              <span className={isMax ? 'text-orange-600 font-semibold' : ''}>
+                {count}/6
               </span>
             </div>
-            {selectedIds.size >= MAX_SELECT && (
+            {isMax && (
               <div className="mb-2 text-xs bg-orange-50 border border-orange-200 text-orange-700 px-2 py-1.5 rounded-md flex items-center gap-1.5">
                 <span>⚠️</span>
-                <span>最多只能对比 {MAX_SELECT} 个站点</span>
+                <span>最多只能对比 6 个站点</span>
               </div>
             )}
             <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
               {stations.map(station => {
-                const checked = selectedIds.has(station.id);
-                const disabled = !checked && selectedIds.size >= MAX_SELECT;
+                const checked = isSelected(station.id);
+                const disabled = isDisabled(station.id);
                 return (
                   <label
                     key={station.id}
