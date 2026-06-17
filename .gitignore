@@ -7,52 +7,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Coverage
-coverage
-*.lcov
-.nyc_output
-
-# Dependencies
-node_modules/
-jspm_packages/
-web_modules/
-.pnp.*
-
-# Build output
+node_modules
 dist
-build/
-.next
-.nuxt
-out
-public/
+dist-ssr
+*.local
 
-# TypeScript
-*.tsbuildinfo
-
-# Cache
-.npm
-.eslintcache
-.stylelintcache
-.cache
-.parcel-cache
-.vite/
-*.timestamp-*
-
-# Env
-.env
-.env.*.local
-.env.local
-
-# IDE
-.idea/
+# Editor directories and files
 .vscode/*
-!.vscode/settings.json
 !.vscode/extensions.json
-*.sw?
+.idea
 .DS_Store
-Thumbs.db
-
-# Misc
-.node_repl_history
-*.tgz
-.yarn-integrity
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
