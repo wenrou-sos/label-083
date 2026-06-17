@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(Set-Location -Path d:\\\\proje\\\\label-083; $hash = git rev-parse HEAD; $url = git remote get-url origin; $count = git rev-list --count HEAD; Write-Output \"HASH: $hash\"; Write-Output \"URL: $url\"; Write-Output \"COUNT: $count\")"
+      "PowerShell(Set-Location -Path d:\\\\proje\\\\label-083; $hash = git rev-parse HEAD; $url = git remote get-url origin; $count = git rev-list --count HEAD; Write-Output \"HASH: $hash\"; Write-Output \"URL: $url\"; Write-Output \"COUNT: $count\")",
+      "PowerShell(Set-Location -Path d:\\\\proje\\\\label-083; $json = '{\"repoId\":\"zlj-083-5\",\"solver\":\"张霖驹\",\"traeSessionId\":\".2187342742565564:404dae54a430fd86b3a0f126b85ba269_6a3177746f522ed2cbd9e581.6a32273a6f522ed2cbd9fe2b.6a32273951405808e54a930c:Trae CN.T\\(2026/6/17 12:49:59\\)\",\"userPrompt\":\"清空已选站点后，对比面板不会自动收起，页面会停留在空白的站点对比态,修改好后把上面提到的功能的测试用例做好\",\"modificationScope\":\"多文件\",\"repoUrl\":\"https://github.com/wenrou-sos/label-083.git\",\"commitId\":\"05b4f5f939b522213bf1dd3666eacea8c0abb3c8\",\"result\":\"修复Bug\"}'; [System.IO.File]::WriteAllText\\(\"d:\\\\proje\\\\label-083\\\\record.json\", $json, [System.Text.UTF8Encoding]::new\\($false\\)\\); curl.exe -X POST \"http://192.168.10.43:38427/api/records\" -H \"Content-Type: application/json; charset=utf-8\" --data-binary \"@record.json\")"
     ]
   }
 }

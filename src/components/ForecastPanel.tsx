@@ -1,24 +1,24 @@
 import type { ForecastData } from '../data/mockData';
 import { getAqiColor, getAqiLevelText } from '../utils/aqi';
+import { useI18n } from '../i18n';
 
 interface ForecastPanelProps {
   data: ForecastData[];
 }
 
 const weatherIcons: Record<string, string> = {
-  '晴': '☀️',
-  '多云': '⛅',
-  '阴': '☁️',
-  '小雨': '🌧️',
-  '雷阵雨': '⛈️',
+  '晴': '☀️', '多云': '⛅', '阴': '☁️', '小雨': '🌧️', '雷阵雨': '⛈️',
+  'Sunny': '☀️', 'Cloudy': '⛅', 'Overcast': '☁️', 'Light Rain': '🌧️', 'Thunderstorm': '⛈️',
 };
 
 export const ForecastPanel = ({ data }: ForecastPanelProps) => {
+  const { t, locale } = useI18n();
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-4 h-full">
       <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
         <span className="text-2xl">📅</span>
-        未来3天空气质量预报
+        {t.forecast.title}
       </h3>
       <div className="grid grid-cols-3 gap-3">
         {data.map((item, idx) => (
@@ -43,24 +43,24 @@ export const ForecastPanel = ({ data }: ForecastPanelProps) => {
               style={{ backgroundColor: getAqiColor(item.aqi) }}
             >
               <div className="text-2xl font-bold text-white">{item.aqi}</div>
-              <div className="text-xs text-white/90">{getAqiLevelText(item.aqi)}</div>
+              <div className="text-xs text-white/90">{getAqiLevelText(item.aqi, locale)}</div>
             </div>
 
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
-                <span className="text-gray-500">首要污染物</span>
+                <span className="text-gray-500">{t.forecast.primaryPollutant}</span>
                 <span className="font-medium text-gray-700">{item.primaryPollutant}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">温度</span>
+                <span className="text-gray-500">{t.forecast.temperature}</span>
                 <span className="font-medium text-gray-700">{item.temperature}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">天气</span>
+                <span className="text-gray-500">{t.forecast.weather}</span>
                 <span className="font-medium text-gray-700">{item.weather}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">风力</span>
+                <span className="text-gray-500">{t.forecast.wind}</span>
                 <span className="font-medium text-gray-700">{item.wind}</span>
               </div>
             </div>

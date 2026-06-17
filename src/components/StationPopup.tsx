@@ -1,24 +1,27 @@
 import ReactECharts from 'echarts-for-react';
 import type { StationData } from '../data/mockData';
 import { getAqiColor, getAqiLevelText } from '../utils/aqi';
+import { useI18n } from '../i18n';
 
 interface StationPopupProps {
   station: StationData;
 }
 
-const pollutantConfig = [
-  { key: 'pm25', name: 'PM₂.₅', unit: 'μg/m³', color: '#5470c6' },
-  { key: 'pm10', name: 'PM₁₀', unit: 'μg/m³', color: '#91cc75' },
-  { key: 'o3', name: 'O₃', unit: 'μg/m³', color: '#fac858' },
-  { key: 'no2', name: 'NO₂', unit: 'μg/m³', color: '#ee6666' },
-  { key: 'so2', name: 'SO₂', unit: 'μg/m³', color: '#73c0de' },
-  { key: 'co', name: 'CO', unit: 'mg/m³', color: '#3ba272' },
-];
-
 export const StationPopup = ({ station }: StationPopupProps) => {
+  const { t, locale } = useI18n();
+
+  const pollutantConfig = [
+    { key: 'pm25', nameKey: 'pm25' as const, unitKey: 'unitUgm3' as const, color: '#5470c6' },
+    { key: 'pm10', nameKey: 'pm10' as const, unitKey: 'unitUgm3' as const, color: '#91cc75' },
+    { key: 'o3', nameKey: 'o3' as const, unitKey: 'unitUgm3' as const, color: '#fac858' },
+    { key: 'no2', nameKey: 'no2' as const, unitKey: 'unitUgm3' as const, color: '#ee6666' },
+    { key: 'so2', nameKey: 'so2' as const, unitKey: 'unitUgm3' as const, color: '#73c0de' },
+    { key: 'co', nameKey: 'co' as const, unitKey: 'unitMgm3' as const, color: '#3ba272' },
+  ];
+
   const trendOption = {
     title: {
-      text: '24小时趋势',
+      text: t.popup.trend24h,
       left: 'center',
       textStyle: { fontSize: 14, fontWeight: 'normal' },
     },
@@ -27,7 +30,7 @@ export const StationPopup = ({ station }: StationPopupProps) => {
       axisPointer: { type: 'cross' },
     },
     legend: {
-      data: pollutantConfig.map(p => p.name),
+      data: pollutantConfig.map(p => t.popup.pollutants[p.nameKey]),
       bottom: 0,
       textStyle: { fontSize: 10 },
       type: 'scroll',
@@ -52,7 +55,7 @@ export const StationPopup = ({ station }: StationPopupProps) => {
       splitLine: { lineStyle: { color: '#eee' } },
     },
     series: pollutantConfig.map(p => ({
-      name: p.name,
+      name: t.popup.pollutants[p.nameKey],
       type: 'line',
       smooth: true,
       symbol: 'circle',
@@ -69,7 +72,7 @@ export const StationPopup = ({ station }: StationPopupProps) => {
         <div>
           <div className="font-semibold text-gray-800">{station.name}</div>
           <div className="text-xs text-gray-500">
-            {station.type === 'national' ? '国控站' : '省控站'} · 更新于 {station.updateTime}
+            {station.type === 'national' ? t.station.national : t.station.provincial} · {station.updateTime}
           </div>
         </div>
         <div
@@ -77,7 +80,7 @@ export const StationPopup = ({ station }: StationPopupProps) => {
           style={{ backgroundColor: getAqiColor(station.aqi) }}
         >
           {station.aqi}
-          <span className="text-xs ml-1 font-normal">{getAqiLevelText(station.aqi)}</span>
+          <span className="text-xs ml-1 font-normal">{getAqiLevelText(station.aqi, locale)}</span>
         </div>
       </div>
 
@@ -87,10 +90,10 @@ export const StationPopup = ({ station }: StationPopupProps) => {
             key={p.key}
             className="bg-gray-50 rounded-lg p-2 text-center border border-gray-100"
           >
-            <div className="text-xs text-gray-500">{p.name}</div>
+            <div className="text-xs text-gray-500">{t.popup.pollutants[p.nameKey]}</div>
             <div className="font-semibold text-gray-800" style={{ color: p.color }}>
               {station[p.key as keyof Pick<typeof station, 'pm25' | 'pm10' | 'o3' | 'no2' | 'so2' | 'co'>]}
-              <span className="text-xs text-gray-400 ml-0.5">{p.unit}</span>
+              <span className="text-xs text-gray-400 ml-0.5">{t.popup[p.unitKey]}</span>
             </div>
           </div>
         ))}

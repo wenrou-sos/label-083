@@ -6,10 +6,10 @@ import { StationComparison } from '../components/StationComparison';
 import { stations, microStations, forecast, historyStats } from '../data/mockData';
 import { useStationSelection } from '../hooks/useStationSelection';
 import { getAqiColor, getAqiLevelText } from '../utils/aqi';
+import { useI18n } from '../i18n';
 
 export default function Home() {
   const {
-    selectedIds,
     selectedStations,
     isSelected,
     isDisabled,
@@ -20,6 +20,8 @@ export default function Home() {
     activeTab,
     setActiveTab,
   } = useStationSelection(stations);
+
+  const { t, locale, toggleLocale } = useI18n();
 
   const overallStats = useMemo(() => {
     const avgAqi = Math.round(stations.reduce((sum, s) => sum + s.aqi, 0) / stations.length);
@@ -39,9 +41,9 @@ export default function Home() {
               <span className="text-white text-xl">🌍</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">城市空气质量监测面板</h1>
+              <h1 className="text-xl font-bold text-gray-800">{t.header.title}</h1>
               <p className="text-xs text-gray-500">
-                实时监测 · {stations.length}个国控/省控站 · {microStations.length}个微型站
+                {t.header.subtitle} · {stations.length}{t.header.nationalStations} · {microStations.length}{t.header.microStations}
               </p>
             </div>
           </div>
@@ -57,12 +59,12 @@ export default function Home() {
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-500">全市平均 AQI</div>
+                <div className="text-xs text-gray-500">{t.header.avgAqi}</div>
                 <div
                   className="text-lg font-bold"
                   style={{ color: getAqiColor(overallStats.avgAqi) }}
                 >
-                  {getAqiLevelText(overallStats.avgAqi)}
+                  {getAqiLevelText(overallStats.avgAqi, locale)}
                 </div>
               </div>
             </div>
@@ -72,24 +74,34 @@ export default function Home() {
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-500">{overallStats.excellentCount}</div>
-                <div className="text-xs text-gray-500">优</div>
+                <div className="text-xs text-gray-500">{t.header.excellent}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-500">{overallStats.goodCount}</div>
-                <div className="text-xs text-gray-500">良</div>
+                <div className="text-xs text-gray-500">{t.header.good}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-500">{overallStats.pollutedCount}</div>
-                <div className="text-xs text-gray-500">污染</div>
+                <div className="text-xs text-gray-500">{t.header.polluted}</div>
               </div>
             </div>
 
             <div className="text-right">
-              <div className="text-xs text-gray-500">更新时间</div>
+              <div className="text-xs text-gray-500">{t.header.updateTime}</div>
               <div className="text-sm font-medium text-gray-700">
-                {new Date().toLocaleString('zh-CN')}
+                {new Date().toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US')}
               </div>
             </div>
+
+            <div className="h-10 w-px bg-gray-200" />
+
+            <button
+              onClick={toggleLocale}
+              className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 shadow-sm"
+              title={locale === 'zh' ? 'Switch to English' : '切换到中文'}
+            >
+              {locale === 'zh' ? '中 / EN' : 'EN / 中'}
+            </button>
           </div>
         </div>
       </header>
@@ -111,7 +123,7 @@ export default function Home() {
               >
                 <span className="flex items-center justify-center gap-1.5">
                   <span>📊</span>
-                  历史统计
+                  {t.tab.stats}
                 </span>
                 {activeTab === 'stats' && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
@@ -128,7 +140,7 @@ export default function Home() {
               >
                 <span className="flex items-center justify-center gap-1.5">
                   <span>📈</span>
-                  站点对比
+                  {t.tab.compare}
                   {selectedStations.length > 0 && (
                     <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[10px] rounded-full bg-blue-600 text-white">
                       {selectedStations.length}
@@ -162,19 +174,19 @@ export default function Home() {
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <span className="text-2xl">📍</span>
-                监测站点列表
+                {t.station.listTitle}
               </h3>
               {count > 0 && (
                 <button
                   onClick={clearSelection}
                   className="text-xs text-blue-600 hover:text-blue-800"
                 >
-                  取消全部
+                  {t.station.clearAll}
                 </button>
               )}
             </div>
             <div className="text-xs text-gray-500 mb-2 flex items-center justify-between">
-              <span>勾选站点进行对比分析</span>
+              <span>{t.station.selectHint}</span>
               <span className={isMax ? 'text-orange-600 font-semibold' : ''}>
                 {count}/6
               </span>
@@ -182,7 +194,7 @@ export default function Home() {
             {isMax && (
               <div className="mb-2 text-xs bg-orange-50 border border-orange-200 text-orange-700 px-2 py-1.5 rounded-md flex items-center gap-1.5">
                 <span>⚠️</span>
-                <span>最多只能对比 6 个站点</span>
+                <span>{t.station.maxWarning.replace('{max}', '6')}</span>
               </div>
             )}
             <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
@@ -216,14 +228,14 @@ export default function Home() {
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-gray-800 text-sm truncate">{station.name}</div>
                       <div className="text-xs text-gray-500">
-                        {station.type === 'national' ? '国控站' : '省控站'}
+                        {station.type === 'national' ? t.station.national : t.station.provincial}
                       </div>
                     </div>
                     <div
                       className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white flex-shrink-0"
                       style={{ backgroundColor: getAqiColor(station.aqi) }}
                     >
-                      {getAqiLevelText(station.aqi)}
+                      {getAqiLevelText(station.aqi, locale)}
                     </div>
                   </label>
                 );

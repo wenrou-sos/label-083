@@ -1,21 +1,24 @@
 import ReactECharts from 'echarts-for-react';
 import type { HistoryStats as HistoryStatsType } from '../data/mockData';
+import { useI18n } from '../i18n';
 
 interface HistoryStatsProps {
   data: HistoryStatsType;
 }
 
 export const HistoryStats = ({ data }: HistoryStatsProps) => {
+  const { t } = useI18n();
+
   const daysPieOption = {
     title: {
-      text: '本月优良天数比例',
+      text: t.history.goodDaysTitle,
       left: 'center',
       top: 10,
       textStyle: { fontSize: 14, fontWeight: 'normal' },
     },
     tooltip: {
       trigger: 'item',
-      formatter: '{b}: {c}天 ({d}%)',
+      formatter: `{b}: {c}${t.history.days} ({d}%)`,
     },
     legend: {
       orient: 'horizontal',
@@ -24,7 +27,7 @@ export const HistoryStats = ({ data }: HistoryStatsProps) => {
     },
     series: [
       {
-        name: '空气质量',
+        name: t.history.aqi,
         type: 'pie',
         radius: ['40%', '65%'],
         center: ['50%', '45%'],
@@ -46,9 +49,9 @@ export const HistoryStats = ({ data }: HistoryStatsProps) => {
           length2: 10,
         },
         data: [
-          { value: data.excellentDays, name: '优', itemStyle: { color: '#00E400' } },
-          { value: data.goodDays, name: '良', itemStyle: { color: '#FFFF00' } },
-          { value: data.pollutedDays, name: '污染', itemStyle: { color: '#FF7E00' } },
+          { value: data.excellentDays, name: t.history.excellent, itemStyle: { color: '#00E400' } },
+          { value: data.goodDays, name: t.history.good, itemStyle: { color: '#FFFF00' } },
+          { value: data.pollutedDays, name: t.history.polluted, itemStyle: { color: '#FF7E00' } },
         ],
       },
     ],
@@ -56,7 +59,7 @@ export const HistoryStats = ({ data }: HistoryStatsProps) => {
 
   const pollutantBarOption = {
     title: {
-      text: '首要污染物统计',
+      text: t.history.pollutantTitle,
       left: 'center',
       top: 10,
       textStyle: { fontSize: 14, fontWeight: 'normal' },
@@ -66,7 +69,7 @@ export const HistoryStats = ({ data }: HistoryStatsProps) => {
       axisPointer: { type: 'shadow' },
       formatter: (params: any) => {
         const p = params[0];
-        return `${p.name}<br/>超标天数: ${p.value}天<br/>占比: ${p.data.rate}%`;
+        return `${p.name}<br/>${p.value}${t.history.days} (${p.data.rate}%)`;
       },
     },
     grid: {
@@ -84,7 +87,7 @@ export const HistoryStats = ({ data }: HistoryStatsProps) => {
     },
     yAxis: {
       type: 'value',
-      name: '天数',
+      name: t.history.days,
       nameTextStyle: { fontSize: 10, color: '#999' },
       axisLabel: { fontSize: 10 },
       splitLine: { lineStyle: { color: '#eee' } },
@@ -110,7 +113,7 @@ export const HistoryStats = ({ data }: HistoryStatsProps) => {
         label: {
           show: true,
           position: 'top',
-          formatter: '{c}天',
+          formatter: `{c}${t.history.days}`,
           fontSize: 11,
           fontWeight: 'bold',
         },
@@ -129,7 +132,7 @@ export const HistoryStats = ({ data }: HistoryStatsProps) => {
     <div className="bg-white rounded-xl shadow-lg p-4 h-full">
       <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
         <span className="text-2xl">📊</span>
-        历史日统计
+        {t.history.title}
       </h3>
 
       <div className="grid grid-cols-2 gap-4 h-[calc(100%-60px)]">
@@ -146,16 +149,16 @@ export const HistoryStats = ({ data }: HistoryStatsProps) => {
             <div
               className="rounded-lg p-3 text-center bg-gradient-to-br from-orange-100 to-orange-200 border border-orange-300"
             >
-              <div className="text-xs text-orange-700 mb-1">O₃ 超标占比</div>
+              <div className="text-xs text-orange-700 mb-1">{t.history.ozoneExceed}</div>
               <div className="text-xl font-bold text-orange-800">{o3?.rate || 0}%</div>
-              <div className="text-[10px] text-orange-600">{o3?.days || 0}天</div>
+              <div className="text-[10px] text-orange-600">{o3?.days || 0}{t.history.days}</div>
             </div>
             <div
               className="rounded-lg p-3 text-center bg-gradient-to-br from-blue-100 to-blue-200 border border-blue-300"
             >
-              <div className="text-xs text-blue-700 mb-1">PM₂.₅ 超标占比</div>
+              <div className="text-xs text-blue-700 mb-1">{t.history.pm25Exceed}</div>
               <div className="text-xl font-bold text-blue-800">{pm25?.rate || 0}%</div>
-              <div className="text-[10px] text-blue-600">{pm25?.days || 0}天</div>
+              <div className="text-[10px] text-blue-600">{pm25?.days || 0}{t.history.days}</div>
             </div>
           </div>
         </div>
