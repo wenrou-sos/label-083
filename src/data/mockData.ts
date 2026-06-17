@@ -21,6 +21,10 @@ export interface StationData {
     so2: number[];
     co: number[];
   };
+  history7d: {
+    date: string;
+    aqi: number;
+  }[];
 }
 
 export interface MicroStationData {
@@ -82,6 +86,19 @@ const generateTrend24h = () => {
   };
 };
 
+const generateHistory7d = (baseAqi: number) => {
+  const history = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
+    const variance = baseAqi * 0.4;
+    const aqi = Math.max(10, Math.round(baseAqi + (Math.random() - 0.5) * variance));
+    history.push({ date: dateStr, aqi });
+  }
+  return history;
+};
+
 export const stations: StationData[] = [
   {
     id: '1001',
@@ -98,6 +115,7 @@ export const stations: StationData[] = [
     co: 0.9,
     updateTime: new Date().toLocaleString('zh-CN'),
     trend24h: generateTrend24h(),
+    history7d: generateHistory7d(72),
   },
   {
     id: '1002',
@@ -114,6 +132,7 @@ export const stations: StationData[] = [
     co: 0.6,
     updateTime: new Date().toLocaleString('zh-CN'),
     trend24h: generateTrend24h(),
+    history7d: generateHistory7d(45),
   },
   {
     id: '1003',
@@ -130,6 +149,7 @@ export const stations: StationData[] = [
     co: 1.2,
     updateTime: new Date().toLocaleString('zh-CN'),
     trend24h: generateTrend24h(),
+    history7d: generateHistory7d(98),
   },
   {
     id: '1004',
@@ -146,6 +166,7 @@ export const stations: StationData[] = [
     co: 1.8,
     updateTime: new Date().toLocaleString('zh-CN'),
     trend24h: generateTrend24h(),
+    history7d: generateHistory7d(156),
   },
   {
     id: '1005',
@@ -162,6 +183,7 @@ export const stations: StationData[] = [
     co: 2.3,
     updateTime: new Date().toLocaleString('zh-CN'),
     trend24h: generateTrend24h(),
+    history7d: generateHistory7d(205),
   },
   {
     id: '2001',
@@ -178,6 +200,7 @@ export const stations: StationData[] = [
     co: 0.4,
     updateTime: new Date().toLocaleString('zh-CN'),
     trend24h: generateTrend24h(),
+    history7d: generateHistory7d(32),
   },
   {
     id: '2002',
@@ -194,6 +217,7 @@ export const stations: StationData[] = [
     co: 2.8,
     updateTime: new Date().toLocaleString('zh-CN'),
     trend24h: generateTrend24h(),
+    history7d: generateHistory7d(230),
   },
   {
     id: '2003',
@@ -210,6 +234,7 @@ export const stations: StationData[] = [
     co: 3.5,
     updateTime: new Date().toLocaleString('zh-CN'),
     trend24h: generateTrend24h(),
+    history7d: generateHistory7d(310),
   },
   {
     id: '2004',
@@ -226,6 +251,7 @@ export const stations: StationData[] = [
     co: 1.4,
     updateTime: new Date().toLocaleString('zh-CN'),
     trend24h: generateTrend24h(),
+    history7d: generateHistory7d(115),
   },
 ];
 

@@ -1,11 +1,18 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { AirQualityMap } from '../components/AirQualityMap';
 import { ForecastPanel } from '../components/ForecastPanel';
 import { HistoryStats } from '../components/HistoryStats';
+import { StationComparison } from '../components/StationComparison';
 import { stations, microStations, forecast, historyStats } from '../data/mockData';
+import type { StationData } from '../data/mockData';
 import { getAqiColor, getAqiLevelText } from '../utils/aqi';
 
+const MAX_SELECT = 6;
+
 export default function Home() {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<'stats' | 'compare'>('stats');
+
   const overallStats = useMemo(() => {
     const avgAqi = Math.round(stations.reduce((sum, s) => sum + s.aqi, 0) / stations.length);
     const maxAqi = Math.max(...stations.map(s => s.aqi));
@@ -14,6 +21,31 @@ export default function Home() {
     const pollutedCount = stations.filter(s => s.aqi > 100).length;
     return { avgAqi, maxAqi, excellentCount, goodCount, pollutedCount };
   }, []);
+
+  const selectedStations: StationData[] = useMemo(
+    () => stations.filter(s => selectedIds.has(s.id)),
+    [selectedIds]
+  );
+
+  const toggleStation = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        if (next.size >= MAX_SELECT) {
+          return prev;
+        }
+        next.add(id);
+        if (activeTab === 'stats') setActiveTab('compare');
+      }
+      return next;
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
 
   return (
     <div className="w-full h-full bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
@@ -84,45 +116,135 @@ export default function Home() {
           <div className="flex-1 min-h-0 rounded-xl overflow-hidden shadow-lg border border-gray-100">
             <AirQualityMap stations={stations} microStations={microStations} />
           </div>
-          <div className="h-[320px] flex-shrink-0">
-            <HistoryStats data={historyStats} />
+          <div className="h-[340px] flex-shrink-0 flex flex-col">
+            <div className="flex bg-white rounded-t-xl shadow-sm border border-b-0 border-gray-100">
+              <button
+                onClick={() => setActiveTab('stats')}
+                className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
+                  activeTab === 'stats'
+                    ? 'text-blue-600 bg-blue-50/50'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <span className="flex items-center justify-center gap-1.5">
+                  <span>📊</span>
+                  历史统计
+                </span>
+                {activeTab === 'stats' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+                )}
+              </button>
+              <div className="w-px bg-gray-200 my-2" />
+              <button
+                onClick={() => setActiveTab('compare')}
+                className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
+                  activeTab === 'compare'
+                    ? 'text-blue-600 bg-blue-50/50'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <span className="flex items-center justify-center gap-1.5">
+                  <span>📈</span>
+                  站点对比
+                  {selectedStations.length > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 text-[10px] rounded-full bg-blue-600 text-white">
+                      {selectedStations.length}
+                    </span>
+                  )}
+                </span>
+                {activeTab === 'compare' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+                )}
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 rounded-b-xl shadow-lg border border-t-0 border-gray-100 overflow-hidden">
+              {activeTab === 'stats' ? (
+                <div className="h-full">
+                  <HistoryStats data={historyStats} />
+                </div>
+              ) : (
+                <div className="h-full">
+                  <StationComparison
+                    stations={selectedStations}
+                    onClear={clearSelection}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="w-[420px] flex-shrink-0 flex flex-col gap-4">
           <div className="bg-white rounded-xl shadow-lg p-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <span className="text-2xl">📍</span>
-              监测站点列表
-            </h3>
-            <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
-              {stations.map(station => (
-                <div
-                  key={station.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer border border-transparent hover:border-gray-200"
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <span className="text-2xl">📍</span>
+                监测站点列表
+              </h3>
+              {selectedIds.size > 0 && (
+                <button
+                  onClick={clearSelection}
+                  className="text-xs text-blue-600 hover:text-blue-800"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  取消全部
+                </button>
+              )}
+            </div>
+            <div className="text-xs text-gray-500 mb-2 flex items-center justify-between">
+              <span>勾选站点进行对比分析</span>
+              <span className={selectedIds.size >= MAX_SELECT ? 'text-orange-600 font-semibold' : ''}>
+                {selectedIds.size}/{MAX_SELECT}
+              </span>
+            </div>
+            {selectedIds.size >= MAX_SELECT && (
+              <div className="mb-2 text-xs bg-orange-50 border border-orange-200 text-orange-700 px-2 py-1.5 rounded-md flex items-center gap-1.5">
+                <span>⚠️</span>
+                <span>最多只能对比 {MAX_SELECT} 个站点</span>
+              </div>
+            )}
+            <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+              {stations.map(station => {
+                const checked = selectedIds.has(station.id);
+                const disabled = !checked && selectedIds.size >= MAX_SELECT;
+                return (
+                  <label
+                    key={station.id}
+                    className={`flex items-center gap-2.5 p-2.5 rounded-lg transition-colors cursor-pointer border ${
+                      checked
+                        ? 'bg-blue-50 border-blue-200'
+                        : disabled
+                        ? 'bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed'
+                        : 'bg-gray-50 hover:bg-gray-100 border-transparent hover:border-gray-200'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={disabled}
+                      onChange={() => toggleStation(station.id)}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0"
+                      className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs shadow flex-shrink-0"
                       style={{ backgroundColor: getAqiColor(station.aqi) }}
                     >
                       {station.aqi}
                     </div>
-                    <div className="min-w-0">
-                      <div className="font-medium text-gray-800 truncate">{station.name}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-gray-800 text-sm truncate">{station.name}</div>
                       <div className="text-xs text-gray-500">
                         {station.type === 'national' ? '国控站' : '省控站'}
                       </div>
                     </div>
-                  </div>
-                  <div
-                    className="text-xs font-semibold px-2 py-1 rounded-full text-white flex-shrink-0"
-                    style={{ backgroundColor: getAqiColor(station.aqi) }}
-                  >
-                    {getAqiLevelText(station.aqi)}
-                  </div>
-                </div>
-              ))}
+                    <div
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white flex-shrink-0"
+                      style={{ backgroundColor: getAqiColor(station.aqi) }}
+                    >
+                      {getAqiLevelText(station.aqi)}
+                    </div>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
