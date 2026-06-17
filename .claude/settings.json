@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Set-Location -Path d:\\\\proje\\\\label-083; $hash = git rev-parse HEAD; $url = git remote get-url origin; $count = git rev-list --count HEAD; Write-Output \"HASH: $hash\"; Write-Output \"URL: $url\"; Write-Output \"COUNT: $count\")"
+    ]
+  }
+}
